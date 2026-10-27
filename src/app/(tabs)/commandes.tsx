@@ -1,5 +1,5 @@
-import { ComingSoon } from '@/components/ComingSoon';
+import { OrdersView } from '@/view/orders';
 
-export default function Screen() {
-  return <ComingSoon title="Commandes" />;
+export default function OrdersScreen() {
+  return <OrdersView />;
 }

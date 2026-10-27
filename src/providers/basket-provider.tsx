@@ -12,7 +12,7 @@ import {
 import { useAuth } from '@/auth/auth-provider';
 import type { Basket, BasketItem } from '@/types/basket';
 import { getErrorMessage } from '@/utils/errors';
-import { notifyError } from '@/utils/notify';
+import { notifyError, notifySuccess } from '@/utils/notify';
 
 type Action =
   | { type: 'ADD'; item: BasketItem }
@@ -24,7 +24,15 @@ type Action =
 const reducer = (state: Basket | null, action: Action): Basket | null => {
   switch (action.type) {
     case 'ADD':
-      return state && { ...state, basketItems: [...state.basketItems, action.item] };
+      // A refetch can land before this dispatch and already contain the item, so upsert by id.
+      return (
+        state && {
+          ...state,
+          basketItems: state.basketItems.some((i) => i.id === action.item.id)
+            ? state.basketItems.map((i) => (i.id === action.item.id ? action.item : i))
+            : [...state.basketItems, action.item],
+        }
+      );
     case 'UPDATE_QUANTITY':
       return (
         state && {
@@ -48,10 +56,13 @@ type BasketContextType = {
   items: BasketItem[];
   basketCount: number;
   isHydrated: boolean;
-  addToBasket: (productId: number, quantity?: number, variant?: string) => Promise<void>;
+  /** Resolves to whether the product ended up added (false when already in the basket or on error). */
+  addToBasket: (productId: number, quantity?: number, variant?: string) => Promise<boolean>;
   removeFromBasket: (basketItemId: number) => Promise<void>;
   updateQuantity: (basketItemId: number, quantity: number) => Promise<void>;
   clearBasket: () => Promise<void>;
+  /** Reloads the basket from the server (the guest basket when signed out). */
+  refresh: () => Promise<void>;
 };
 
 const BasketContext = createContext<BasketContextType | null>(null);
@@ -116,14 +127,17 @@ export function BasketProvider({ children }: { children: ReactNode }) {
     async (productId, quantity = 1, variant) => {
       if (basket?.basketItems.some((i) => i.product.id === productId && i.variant === variant)) {
         notifyError('Ce produit est déjà dans votre panier.', 'Panier');
-        return;
+        return false;
       }
       try {
         const item = await add({ productId, quantity, variant });
         dispatch({ type: 'ADD', item });
+        notifySuccess('Produit ajouté au panier', 'Le produit a été ajouté avec succès.');
         refreshGuest();
+        return true;
       } catch (error) {
         notifyError(getErrorMessage(error, "Impossible d'ajouter le produit au panier."));
+        return false;
       }
     },
     [basket, add, refreshGuest],
@@ -165,6 +179,10 @@ export function BasketProvider({ children }: { children: ReactNode }) {
     }
   }, [clear, refreshGuest]);
 
+  const refresh = useCallback(async () => {
+    await (user ? refetchUserBasket() : refetchGuestBasket());
+  }, [user, refetchUserBasket, refetchGuestBasket]);
+
   const value = useMemo<BasketContextType>(
     () => ({
       basket,
@@ -175,8 +193,9 @@ export function BasketProvider({ children }: { children: ReactNode }) {
       removeFromBasket,
       updateQuantity,
       clearBasket,
+      refresh,
     }),
-    [basket, isLoading, isError, addToBasket, removeFromBasket, updateQuantity, clearBasket],
+    [basket, isLoading, isError, addToBasket, removeFromBasket, updateQuantity, clearBasket, refresh],
   );
 
   return <BasketContext.Provider value={value}>{children}</BasketContext.Provider>;

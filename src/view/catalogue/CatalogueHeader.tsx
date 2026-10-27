@@ -5,16 +5,18 @@ import { HomeHeader } from '@/components/HomeHeader';
 import { SearchBar } from '@/components/SearchBar';
 
 import { CatalogueResultsBar } from './CatalogueResultsBar';
-import { CATEGORIES, type Category, type Sort } from './constants';
+import { TAGS, type Tag, type Sort } from './constants';
 
 type Props = {
   query: string;
   onChangeQuery: (q: string) => void;
-  category: Category;
-  onSelectCategory: (c: Category) => void;
+  tag: Tag;
+  onSelectTag: (c: Tag) => void;
   resultCount: number;
   sort: Sort;
   onCycleSort: () => void;
+  activeFilters: number;
+  onPressFilters: () => void;
 };
 
 export function CatalogueHeader(props: Props) {
@@ -24,9 +26,14 @@ export function CatalogueHeader(props: Props) {
         <HomeHeader title="Catalogue" />
       </View>
       <View style={styles.pad}>
-        <SearchBar value={props.query} onChangeText={props.onChangeQuery} />
+        <SearchBar
+          value={props.query}
+          onChangeText={props.onChangeQuery}
+          activeFilters={props.activeFilters}
+          onPressFilters={props.onPressFilters}
+        />
       </View>
-      <CategoryChips options={CATEGORIES} selected={props.category} onSelect={props.onSelectCategory} />
+      <CategoryChips options={TAGS} selected={props.tag} onSelect={props.onSelectTag} />
       <CatalogueResultsBar count={props.resultCount} sort={props.sort} onCycleSort={props.onCycleSort} />
     </View>
   );

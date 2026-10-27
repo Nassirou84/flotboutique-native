@@ -1,6 +1,8 @@
-import { ActivityIndicator, Alert, FlatList, StyleSheet, View } from 'react-native';
+import { router } from 'expo-router';
+import { ActivityIndicator, Alert, FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { usePullToRefresh } from '@/hooks/use-pull-to-refresh';
 import { useBasket } from '@/providers/basket-provider';
 import { colors } from '@/theme/colors';
 import type { BasketItem } from '@/types/basket';
@@ -8,12 +10,14 @@ import type { BasketItem } from '@/types/basket';
 import { BasketEmpty } from './BasketEmpty';
 import { BasketHeader } from './BasketHeader';
 import { BasketItemCard } from './BasketItemCard';
+import { BasketRecap } from './BasketRecap';
 import { BasketSummary } from './BasketSummary';
 
 const unitPrice = (item: BasketItem) => item.priceAtAdd ?? item.product.actualPrice ?? 0;
 
 export function BasketView() {
-  const { items, isHydrated, updateQuantity, removeFromBasket, clearBasket } = useBasket();
+  const { items, isHydrated, updateQuantity, removeFromBasket, clearBasket, refresh } = useBasket();
+  const { refreshing, refresh: onRefresh } = usePullToRefresh(refresh);
 
   const itemCount = items.reduce((n, i) => n + i.quantity, 0);
   const total = items.reduce((sum, i) => sum + unitPrice(i) * i.quantity, 0);
@@ -24,7 +28,7 @@ export function BasketView() {
       { text: 'Vider', style: 'destructive', onPress: () => clearBasket() },
     ]);
 
-  const checkout = () => Alert.alert('Commande', 'Le paiement sera bientôt disponible.');
+  const checkout = () => router.navigate('/checkout');
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -39,6 +43,9 @@ export function BasketView() {
           contentContainerStyle={styles.list}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} colors={[colors.primary]} />
+          }
           renderItem={({ item }) => (
             <BasketItemCard
               item={item}
@@ -47,10 +54,12 @@ export function BasketView() {
             />
           )}
           ListEmptyComponent={<BasketEmpty />}
+          ListFooterComponent={items.length > 0 ? <BasketRecap itemCount={itemCount} total={total} /> : undefined}
+          ListFooterComponentStyle={styles.footer}
         />
       )}
 
-      {items.length > 0 ? <BasketSummary itemCount={itemCount} total={total} onCheckout={checkout} /> : null}
+      {items.length > 0 ? <BasketSummary total={total} onCheckout={checkout} /> : null}
     </SafeAreaView>
   );
 }
@@ -59,5 +68,6 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   list: { paddingHorizontal: 16, paddingBottom: 16, flexGrow: 1 },
   separator: { height: 12 },
+  footer: { marginTop: 12 },
   loading: { marginTop: 48 },
 });

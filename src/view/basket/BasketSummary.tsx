@@ -1,53 +1,57 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors } from '@/theme/colors';
-import { formatPrice } from '@/utils/format';
+import { useCurrency } from '@/providers/currency-provider';
 
-type Props = { itemCount: number; total: number; onCheckout: () => void };
+type Props = { total: number; onCheckout: () => void };
 
-export function BasketSummary({ itemCount, total, onCheckout }: Props) {
+export function BasketSummary({ total, onCheckout }: Props) {
+  const { format } = useCurrency();
   return (
     <View style={styles.bar}>
-      <View style={styles.row}>
-        <Text style={styles.label}>
-          Sous-total ({itemCount} article{itemCount > 1 ? 's' : ''})
-        </Text>
-        <Text style={styles.total}>{formatPrice(total)} FCFA</Text>
-      </View>
-      <Text style={styles.note}>Livraison calculée à la commande. Paiement à la réception ou via Wave / Orange Money.</Text>
       <Pressable
         onPress={onCheckout}
         style={({ pressed }) => [styles.cta, pressed && { opacity: 0.85 }]}
-        accessibilityRole="button">
-        <Text style={styles.ctaText}>Passer la commande</Text>
-        <Ionicons name="arrow-forward" size={18} color="#fff" />
+        accessibilityRole="button"
+        accessibilityLabel={`Passer la commande, ${format(total)}`}>
+        <View style={styles.side}>
+          <Ionicons name="lock-closed" size={18} color="#fff" />
+          <Text style={styles.ctaText}>Passer la commande</Text>
+        </View>
+        <View style={styles.side}>
+          <Text style={styles.ctaText}>{format(total)}</Text>
+          <Ionicons name="arrow-forward" size={18} color="#fff" />
+        </View>
       </Pressable>
+      <View style={styles.reassurance}>
+        <Ionicons name="shield-checkmark" size={14} color={colors.primary} />
+        <Text style={styles.reassuranceText}>Paiement sécurisé • Contrôle du colis avant règlement</Text>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   bar: {
-    gap: 8,
-    padding: 16,
+    gap: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     backgroundColor: colors.surface,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: colors.border,
   },
-  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
-  label: { flex: 1, fontSize: 14, color: colors.textMuted },
-  total: { fontSize: 22, fontWeight: '800', color: colors.text },
-  note: { fontSize: 12, color: colors.textMuted },
   cta: {
-    height: 48,
-    borderRadius: 8,
-    backgroundColor: '#1D4ED8',
+    height: 52,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    backgroundColor: colors.primary,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    marginTop: 4,
+    justifyContent: 'space-between',
   },
+  side: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   ctaText: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  reassurance: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4 },
+  reassuranceText: { fontSize: 11, color: colors.textMuted },
 });

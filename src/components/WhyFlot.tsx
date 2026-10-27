@@ -6,21 +6,27 @@ import { colors } from '@/theme/colors';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
+// Same four features as the storefront's home page (`PromoSection`), with its French copy.
 const ROWS: { icon: IconName; title: string; text: string }[] = [
   {
-    icon: 'bicycle-outline',
-    title: 'Livraison Express 2h à Abidjan',
-    text: 'Cocody, Plateau, Marcory, Yopougon & Riviera.',
-  },
-  {
-    icon: 'cash-outline',
-    title: 'Paiement à la livraison & Mobile Money',
-    text: 'Payez en espèces, par Wave ou Orange Money après vérification.',
+    icon: 'globe-outline',
+    title: 'Certifié USA',
+    text: 'Nous offrons une livraison rapide et fiable avec certification USA.',
   },
   {
     icon: 'shield-checkmark-outline',
-    title: 'Garantie Flot Care certifiée',
-    text: 'Service après-vente & atelier technique physique à Cocody.',
+    title: 'Paiement sécurisé',
+    text: "Nous proposons des options de paiement sécurisées pour votre sécurité et votre tranquillité d'esprit.",
+  },
+  {
+    icon: 'arrow-undo-outline',
+    title: 'Produits fiables',
+    text: "Retours faciles sous 10 jours après la livraison, dans leur emballage d'origine.",
+  },
+  {
+    icon: 'chatbubble-ellipses-outline',
+    title: 'Support 24/7',
+    text: 'Notre équipe est toujours là pour vous aider. Contactez-nous à tout moment pour toute question ou préoccupation.',
   },
 ];
 

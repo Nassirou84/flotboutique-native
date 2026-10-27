@@ -21,6 +21,7 @@ export function ProductInfoSections({ product }: { product: Product }) {
               <Text style={[styles.body, styles.bulletText]}>{f}</Text>
             </View>
           ))}
+          <Text style={styles.note}>Note : cette description peut contenir du contenu généré par IA.</Text>
         </ProductAccordion>
       ) : null}
       {details.length > 0 ? (
@@ -33,12 +34,16 @@ export function ProductInfoSections({ product }: { product: Product }) {
           ))}
         </ProductAccordion>
       ) : null}
-      {product.customerSays ? (
-        <ProductAccordion icon="chatbubble-ellipses-outline" title="Avis clients">
-          {rating > 0 ? <Rating value={rating} /> : null}
+      <ProductAccordion icon="chatbubble-ellipses-outline" title="Avis clients">
+        <Rating value={rating} />
+        {product.customerSays ? (
           <Text style={styles.body}>{product.customerSays}</Text>
-        </ProductAccordion>
-      ) : null}
+        ) : (
+          <Text style={[styles.body, styles.placeholder]}>
+            Aucun avis pour le moment. Les avis des clients s’afficheront ici.
+          </Text>
+        )}
+      </ProductAccordion>
     </View>
   );
 }
@@ -46,6 +51,8 @@ export function ProductInfoSections({ product }: { product: Product }) {
 const styles = StyleSheet.create({
   wrap: { paddingHorizontal: 16, gap: 12 },
   body: { fontSize: 14, lineHeight: 21, color: colors.text },
+  note: { fontSize: 12, lineHeight: 17, fontStyle: 'italic', color: colors.textMuted, marginTop: 4 },
+  placeholder: { fontStyle: 'italic', color: colors.textMuted },
   bulletRow: { flexDirection: 'row', gap: 8 },
   bullet: { fontSize: 14, color: colors.primary },
   bulletText: { flex: 1 },

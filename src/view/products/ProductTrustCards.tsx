@@ -1,36 +1,50 @@
 import { Ionicons } from '@expo/vector-icons';
-import type { ComponentProps } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { colors } from '@/theme/colors';
+import { formatDeliveryWindow } from '@/utils/format';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
-const TRUST: { icon: IconName; bg: string; title: string; text: string }[] = [
+const TRUST: { icon: IconName; bg: string; title: string; text: ReactNode }[] = [
   {
     icon: 'rocket-outline',
     bg: '#1D4ED8',
-    title: 'Livraison Express Abidjan',
-    text: 'Livré en 2h à 24h à Cocody, Plateau, Marcory, Yopougon et périphérie.',
+    title: 'Livraison estimée',
+    text: '',
   },
   {
     icon: 'cash-outline',
     bg: '#475569',
     title: 'Paiement 100% Sécurisé',
-    text: 'Payez à la réception après contrôle, ou instantanément via Wave et Orange Money.',
-  },
-  {
-    icon: 'newspaper-outline',
-    bg: colors.orange,
-    title: 'Garantie Flot Care',
-    text: 'Échange standard immédiat en boutique ou réparation express sans frais cachés.',
+    text: 'Payez à la réception après contrôle, ou en ligne via Orange Money, Wave, Djamo, Visa et Mastercard.',
   },
 ];
 
-export function ProductTrustCards() {
+const RETURN: (typeof TRUST)[number] = {
+  icon: 'refresh-outline',
+  bg: colors.green,
+  title: 'Retour accepté',
+  text: 'Cet article peut être retourné sous 10 jours s’il ne vous convient pas.',
+};
+
+export function ProductTrustCards({ acceptReturn }: { acceptReturn?: boolean }) {
+  // Computed per render so the window always starts from today.
+  const { start, end } = formatDeliveryWindow(14, 18);
+  const delivery = {
+    ...TRUST[0],
+    text: (
+      <>
+        Livraison estimée entre le <Text style={styles.date}>{start}</Text> et le <Text style={styles.date}>{end}</Text>.
+      </>
+    ),
+  };
+  const items = acceptReturn ? [delivery, RETURN, ...TRUST.slice(1)] : [delivery, ...TRUST.slice(1)];
+
   return (
     <View style={styles.wrap}>
-      {TRUST.map((t) => (
+      {items.map((t) => (
         <View key={t.title} style={styles.card}>
           <View style={[styles.icon, { backgroundColor: t.bg }]}>
             <Ionicons name={t.icon} size={22} color="#fff" />
@@ -59,4 +73,5 @@ const styles = StyleSheet.create({
   textCol: { flex: 1 },
   title: { fontSize: 18, fontWeight: '600', color: colors.text },
   text: { fontSize: 14, color: colors.textMuted, marginTop: 2, lineHeight: 20 },
+  date: { fontWeight: '700', color: colors.text },
 });

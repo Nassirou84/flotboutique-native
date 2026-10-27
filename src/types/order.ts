@@ -19,8 +19,6 @@ export interface OrderItem {
   unitPrice: number;
   createdAt: string;
   product: Product;
-  status: string;
-  updatedAt?: string;
 }
 
 export interface Order {
@@ -28,8 +26,7 @@ export interface Order {
   '@type': string;
   id: number;
   orderPrice: number;
-  firstName: string;
-  lastName: string;
+  fullName: string;
   street: string;
   city: string;
   state: string;

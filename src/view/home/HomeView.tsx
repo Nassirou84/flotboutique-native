@@ -1,10 +1,11 @@
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ConditionCards } from '@/components/ConditionCards';
 import { FlashSale } from '@/components/FlashSale';
 import { HomeHeader } from '@/components/HomeHeader';
 import { WhyFlot } from '@/components/WhyFlot';
+import { usePullToRefresh } from '@/hooks/use-pull-to-refresh';
 import { colors } from '@/theme/colors';
 
 import { FLASH_ENDS_AT } from './constants';
@@ -12,19 +13,26 @@ import { HomeHero } from './HomeHero';
 import { HomeRecommended } from './HomeRecommended';
 import { HomeSearchBox } from './HomeSearchBox';
 import { HomeSection } from './HomeSection';
-import { goToCatalogue } from './navigation';
+import { goToCatalogue, goToFilters } from './navigation';
+import { useRecommendedProducts } from './use-recommended-products';
 
 export function HomeView() {
+  const recommended = useRecommendedProducts();
+  const { refreshing, refresh } = usePullToRefresh(recommended.refetch);
+
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}>
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={colors.primary} colors={[colors.primary]} />
+        }>
         <View style={styles.pad}>
           <HomeHeader />
         </View>
-        <HomeSearchBox onSearch={(q) => goToCatalogue({ q })} />
+        <HomeSearchBox onSearch={(q) => goToCatalogue({ q })} onOpenFilters={(q) => goToFilters({ q })} />
         <HomeHero />
 
         <HomeSection title="Nos 3 États Certifiés" action={{ label: "Guide d'achat", icon: 'help-circle-outline' }}>
@@ -35,7 +43,7 @@ export function HomeView() {
           <FlashSale endsAt={FLASH_ENDS_AT} />
         </View>
 
-        <HomeRecommended />
+        <HomeRecommended {...recommended} />
 
         <View style={styles.pad}>
           <WhyFlot />

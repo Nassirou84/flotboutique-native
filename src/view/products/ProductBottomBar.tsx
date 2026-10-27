@@ -3,11 +3,12 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { colors } from '@/theme/colors';
-import { formatPrice } from '@/utils/format';
+import { useCurrency } from '@/providers/currency-provider';
 
 type Props = { price?: number; disabled?: boolean; onAddToCart: () => void; onBuyNow: () => void };
 
 export function ProductBottomBar({ price, disabled, onAddToCart, onBuyNow }: Props) {
+  const { formatCompact } = useCurrency();
   const insets = useSafeAreaInsets();
 
   return (
@@ -25,7 +26,7 @@ export function ProductBottomBar({ price, disabled, onAddToCart, onBuyNow }: Pro
         style={({ pressed }) => [styles.buy, (pressed || disabled) && { opacity: 0.8 }]}
         accessibilityRole="button">
         <Text style={styles.buyText} numberOfLines={1}>
-          Acheter maintenant{price != null ? ` • ${formatPrice(price)} F` : ''}
+          Acheter maintenant{price != null ? ` • ${formatCompact(price)}` : ''}
         </Text>
         <View style={styles.pay}>
           <Ionicons name="wallet-outline" size={14} color="#fff" />
