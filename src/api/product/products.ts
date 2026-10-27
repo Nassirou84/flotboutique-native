@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useInfiniteQuery, useQuery } from '@tanstack/react-query';
 
 import axios from '@/api/client';
 import type { Product } from '@/types/product';
@@ -7,7 +7,14 @@ export type GetAllProductsFilters = {
   title?: string;
   category?: string;
   subcategory?: string;
-  /** Raw API Platform order clause, e.g. `[createdAt]=desc`. Only `createdAt` is sortable server-side today. */
+  /** `new`, `refurbished` or `used` (exact match). */
+  productCondition?: string;
+  /** Inclusive bounds on the displayed price, in the storefront currency. */
+  minPrice?: number;
+  maxPrice?: number;
+  sellerChoice?: boolean;
+  primeDelivery?: boolean;
+  /** Raw API Platform order clause: `[createdAt]=desc`, `[usdPrice]=asc` or `[usdPrice]=desc`. */
   order?: string;
 };
 
@@ -19,6 +26,11 @@ export const getAllProducts = async (page: number, filters: GetAllProductsFilter
   params.append('isAvailable', '1');
 
   if (filters.title) params.append('title', filters.title);
+  if (filters.productCondition) params.append('productCondition', filters.productCondition);
+  if (filters.minPrice !== undefined) params.append('minPrice', String(filters.minPrice));
+  if (filters.maxPrice !== undefined) params.append('maxPrice', String(filters.maxPrice));
+  if (filters.sellerChoice) params.append('sellerChoice', 'true');
+  if (filters.primeDelivery) params.append('primeDelivery', 'true');
   if (filters.category) params.append('category.title', filters.category);
   if (filters.subcategory) params.append('subcategory.title', filters.subcategory);
 
@@ -31,6 +43,8 @@ export const useGetProducts = (filters: GetAllProductsFilters = {}) =>
     queryKey: ['GET_ALL_PRODUCTS', filters],
     queryFn: ({ pageParam }) => getAllProducts(pageParam, filters),
     initialPageParam: 1,
+    // Keep the list on screen while a new filter or sort loads, instead of flashing the loader.
+    placeholderData: keepPreviousData,
     getNextPageParam: (last, pages) => {
       const loaded = pages.reduce((n, p) => n + p.products.length, 0);
       return last.products.length > 0 && loaded < last.totalItems ? pages.length + 1 : undefined;

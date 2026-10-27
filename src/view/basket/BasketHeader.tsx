@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors } from '@/theme/colors';
@@ -7,17 +8,24 @@ type Props = { count: number; onClear?: () => void };
 export function BasketHeader({ count, onClear }: Props) {
   return (
     <View style={styles.row}>
-      <View>
+      <View style={styles.titleRow}>
         <Text style={styles.title}>Panier</Text>
         {count > 0 ? (
-          <Text style={styles.subtitle}>
-            {count} article{count > 1 ? 's' : ''}
-          </Text>
+          <View style={styles.count}>
+            <Text style={styles.countText}>
+              {count} article{count > 1 ? 's' : ''}
+            </Text>
+          </View>
         ) : null}
       </View>
       {onClear ? (
-        <Pressable onPress={onClear} hitSlop={8} accessibilityRole="button">
-          <Text style={styles.clear}>Vider le panier</Text>
+        <Pressable
+          onPress={onClear}
+          hitSlop={8}
+          style={styles.clear}
+          accessibilityRole="button"
+          accessibilityLabel="Vider le panier">
+          <Ionicons name="trash-outline" size={22} color={colors.textMuted} />
         </Pressable>
       ) : null}
     </View>
@@ -25,8 +33,10 @@ export function BasketHeader({ count, onClear }: Props) {
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12 },
-  title: { fontSize: 22, fontWeight: '800', color: colors.text },
-  subtitle: { fontSize: 13, color: colors.textMuted, marginTop: 2 },
-  clear: { fontSize: 13, fontWeight: '600', color: colors.danger },
+  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, height: 56 },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  title: { fontSize: 20, fontWeight: '700', color: colors.text },
+  count: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 999, backgroundColor: colors.chipBg },
+  countText: { fontSize: 12, fontWeight: '600', color: colors.textMuted },
+  clear: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', marginRight: -8 },
 });

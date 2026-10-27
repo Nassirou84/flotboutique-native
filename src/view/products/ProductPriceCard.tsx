@@ -2,19 +2,20 @@ import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { colors } from '@/theme/colors';
-import { formatPrice } from '@/utils/format';
+import { useCurrency } from '@/providers/currency-provider';
 
 type Props = { price?: number; oldPrice?: number; available?: boolean };
 
 export function ProductPriceCard({ price, oldPrice, available = true }: Props) {
+  const { format } = useCurrency();
   const discount = oldPrice && price ? Math.round((1 - price / oldPrice) * 100) : undefined;
 
   return (
     <View style={styles.card}>
-      <Text style={styles.price}>{price != null ? `${formatPrice(price)} FCFA` : 'Prix sur demande'}</Text>
+      <Text style={styles.price}>{price != null ? `${format(price)}` : 'Prix sur demande'}</Text>
       {oldPrice ? (
         <View style={styles.oldRow}>
-          <Text style={styles.oldPrice}>{formatPrice(oldPrice)} FCFA</Text>
+          <Text style={styles.oldPrice}>{format(oldPrice)}</Text>
           {discount ? (
             <View style={styles.discount}>
               <Text style={styles.discountText}>-{discount}%</Text>
@@ -31,9 +32,9 @@ export function ProductPriceCard({ price, oldPrice, available = true }: Props) {
 
 const styles = StyleSheet.create({
   card: { backgroundColor: colors.primarySoft, borderRadius: 12, marginHorizontal: 16, padding: 16, gap: 6 },
-  price: { fontSize: 32, fontWeight: '800', color: '#1D4ED8' },
+  price: { fontSize: 24, fontWeight: '800', color: '#1D4ED8' },
   oldRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  oldPrice: { fontSize: 16, color: colors.strike, textDecorationLine: 'line-through' },
+  oldPrice: { fontSize: 14, color: colors.strike, textDecorationLine: 'line-through' },
   discount: { backgroundColor: '#FEE2E2', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 },
   discountText: { color: colors.danger, fontWeight: '700', fontSize: 12 },
   foot: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginTop: 4 },

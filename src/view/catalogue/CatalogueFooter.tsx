@@ -1,13 +1,13 @@
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
-import { GuaranteeBanner } from '@/components/GuaranteeBanner';
+import { ReturnPolicyBanner } from '@/components/ReturnPolicyBanner';
 import { colors } from '@/theme/colors';
 
 export function CatalogueFooter({ loadingMore }: { loadingMore: boolean }) {
   return (
     <View style={styles.footer}>
       {loadingMore ? <ActivityIndicator color={colors.primary} style={styles.more} /> : null}
-      <GuaranteeBanner />
+      <ReturnPolicyBanner />
     </View>
   );
 }

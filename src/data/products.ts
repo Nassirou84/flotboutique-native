@@ -13,10 +13,17 @@ export const CONDITION_LABELS: Record<Condition, string> = {
 };
 
 // Backend `productCondition` values -> the app's three certified states.
-const CONDITION_FROM_API: Record<string, Condition> = {
+export const CONDITION_FROM_API: Record<string, Condition> = {
   new: 'neuf',
   refurbished: 'reconditionne',
   used: 'occasion',
+};
+
+/** Inverse of `CONDITION_FROM_API`: the value the API's `productCondition` filter expects. */
+export const CONDITION_TO_API: Record<Condition, string> = {
+  neuf: 'new',
+  reconditionne: 'refurbished',
+  occasion: 'used',
 };
 
 /** What the product cards render. Optional fields are hidden when the API doesn't provide them. */

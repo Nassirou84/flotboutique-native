@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { CONDITION_LABELS, type Condition, type ProductView } from '@/data/products';
 import { colors } from '@/theme/colors';
-import { formatPrice } from '@/utils/format';
+import { useCurrency } from '@/providers/currency-provider';
 
 const BADGE: Record<Condition, { bg: string; fg: string }> = {
   reconditionne: { bg: '#E0E7FF', fg: '#3730A3' },
@@ -21,6 +21,7 @@ type Props = {
 };
 
 export function CompactProductCard({ product, favorite, onToggleFavorite, onAddToCart }: Props) {
+  const { formatCompact } = useCurrency();
   const badge = product.condition ? BADGE[product.condition] : undefined;
 
   return (
@@ -72,11 +73,11 @@ export function CompactProductCard({ product, favorite, onToggleFavorite, onAddT
         <View style={styles.footer}>
           <View style={styles.priceCol}>
             {product.oldPrice ? (
-              <Text style={styles.oldPrice}>{formatPrice(product.oldPrice)} F</Text>
+              <Text style={styles.oldPrice}>{formatCompact(product.oldPrice)}</Text>
             ) : null}
             {product.price != null ? (
               <Text style={styles.price} numberOfLines={1} adjustsFontSizeToFit>
-                {formatPrice(product.price)} F
+                {formatCompact(product.price)}
               </Text>
             ) : null}
           </View>
@@ -135,7 +136,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 6,
     marginTop: 'auto',
-    paddingTop: 10,
+    paddingTop: 4,
   },
   priceCol: { flex: 1, minHeight: 40, justifyContent: 'flex-end' },
   oldPrice: { fontSize: 11, color: colors.strike, textDecorationLine: 'line-through' },

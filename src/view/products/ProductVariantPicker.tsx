@@ -5,11 +5,12 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { resolveImage } from '@/data/products';
 import { colors } from '@/theme/colors';
 import type { ActualVariant } from '@/types/product';
-import { formatPrice } from '@/utils/format';
+import { useCurrency } from '@/providers/currency-provider';
 
 type Props = { variants: ActualVariant[]; selectedId?: string; onSelect: (id: string) => void };
 
 export function ProductVariantPicker({ variants, selectedId, onSelect }: Props) {
+  const { formatCompact } = useCurrency();
   return (
     <ScrollView
       horizontal
@@ -37,7 +38,7 @@ export function ProductVariantPicker({ variants, selectedId, onSelect }: Props) 
             <Text style={styles.title} numberOfLines={2}>
               {v.title}
             </Text>
-            {v.actualPrice != null ? <Text style={styles.price}>{formatPrice(v.actualPrice)} F</Text> : null}
+            {v.actualPrice != null ? <Text style={styles.price}>{formatCompact(v.actualPrice)}</Text> : null}
           </Pressable>
         );
       })}

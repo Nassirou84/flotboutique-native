@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { useState } from 'react';
+import { useIsFocused } from 'expo-router';
+import { useEffect, useRef, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
 import { colors } from '@/theme/colors';
@@ -17,20 +18,40 @@ export type HeroSlide = {
 };
 
 const HEIGHT = 175;
+/** Time each slide stays before the carousel moves on by itself. */
+const AUTO_SLIDE_MS = 5000;
 
 export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
   const { width } = useWindowDimensions();
   const slideWidth = width - 32;
   const [index, setIndex] = useState(0);
+  const listRef = useRef<FlatList<HeroSlide>>(null);
+  // Held while a finger is on the carousel, and while the home tab is not on screen.
+  const [dragging, setDragging] = useState(false);
+  const focused = useIsFocused();
+
+  // Moves to the next slide (back to the first after the last). Keyed on `index`, so a manual swipe restarts the wait.
+  useEffect(() => {
+    if (dragging || !focused || slides.length < 2) return;
+    const timer = setTimeout(() => {
+      const next = (index + 1) % slides.length;
+      listRef.current?.scrollToOffset({ offset: next * slideWidth, animated: true });
+      setIndex(next);
+    }, AUTO_SLIDE_MS);
+    return () => clearTimeout(timer);
+  }, [index, dragging, focused, slides.length, slideWidth]);
 
   return (
     <View style={[styles.wrap, { width: slideWidth }]}>
       <FlatList
+        ref={listRef}
         data={slides}
         keyExtractor={(s) => s.id}
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
+        onScrollBeginDrag={() => setDragging(true)}
+        onScrollEndDrag={() => setDragging(false)}
         onMomentumScrollEnd={(e) => setIndex(Math.round(e.nativeEvent.contentOffset.x / slideWidth))}
         renderItem={({ item }) => (
           <View style={[styles.slide, { width: slideWidth }]}>

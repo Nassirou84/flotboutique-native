@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { CONDITION_LABELS, type Condition, type ProductView } from '@/data/products';
 import { colors } from '@/theme/colors';
+import { useCurrency } from '@/providers/currency-provider';
 import { formatPrice } from '@/utils/format';
 
 const BADGE: Record<Condition, { bg: string; dot: string }> = {
@@ -21,6 +22,7 @@ type Props = {
 };
 
 export function ProductCard({ product, favorite, onToggleFavorite, onAddToCart }: Props) {
+  const { currency, format } = useCurrency();
   const badge = product.condition ? BADGE[product.condition] : undefined;
   const lightBadge = product.condition === 'neuf';
 
@@ -73,11 +75,11 @@ export function ProductCard({ product, favorite, onToggleFavorite, onAddToCart }
 
         <View style={styles.priceBlock}>
           {product.oldPrice ? (
-            <Text style={styles.oldPrice}>{formatPrice(product.oldPrice)} FCFA</Text>
+            <Text style={styles.oldPrice}>{format(product.oldPrice)}</Text>
           ) : null}
           {product.price != null ? (
             <Text style={styles.price}>
-              {formatPrice(product.price)} <Text style={styles.currency}>FCFA</Text>
+              {formatPrice(product.price)} <Text style={styles.currency}>{currency}</Text>
             </Text>
           ) : (
             <Text style={styles.currency}>Prix sur demande</Text>
@@ -135,10 +137,10 @@ const styles = StyleSheet.create({
   body: { padding: 12, flex: 1 },
   name: { fontSize: 15, fontWeight: '700', color: colors.text, minHeight: 36 },
   specs: { fontSize: 12.5, color: colors.textMuted, marginTop: 2 },
-  priceBlock: { marginTop: 'auto', paddingTop: 10, minHeight: 56, justifyContent: 'flex-end' },
+  priceBlock: { marginTop: 'auto', paddingTop: 4, minHeight: 40, justifyContent: 'flex-end' },
   oldPrice: { fontSize: 11, color: colors.strike, textDecorationLine: 'line-through' },
-  price: { fontSize: 19, fontWeight: '800', color: colors.text },
-  currency: { fontSize: 12, fontWeight: '500', color: colors.textMuted },
+  price: { fontSize: 16, fontWeight: '800', color: colors.text },
+  currency: { fontSize: 11, fontWeight: '500', color: colors.textMuted },
   cta: {
     marginTop: 10,
     height: 40,

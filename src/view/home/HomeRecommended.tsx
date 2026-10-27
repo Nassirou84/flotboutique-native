@@ -6,10 +6,12 @@ import { getErrorMessage } from '@/utils/errors';
 import { HomeProductItem } from './HomeProductItem';
 import { HomeSection } from './HomeSection';
 import { goToCatalogue } from './navigation';
-import { useRecommendedProducts } from './use-recommended-products';
+import type { useRecommendedProducts } from './use-recommended-products';
 
-export function HomeRecommended() {
-  const { products, isLoading, isError, error, refetch } = useRecommendedProducts();
+type Props = ReturnType<typeof useRecommendedProducts>;
+
+// The data is loaded by HomeView so that pull-to-refresh can reload it.
+export function HomeRecommended({ products, isLoading, isError, error, refetch }: Props) {
   const rows = [products.slice(0, 2), products.slice(2, 4)];
 
   return (

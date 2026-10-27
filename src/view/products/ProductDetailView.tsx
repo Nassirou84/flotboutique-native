@@ -6,6 +6,7 @@ import { resolveImage, toProductView } from '@/data/products';
 import { useBasket } from '@/providers/basket-provider';
 import { useWishlist } from '@/providers/wishlist-provider';
 import type { Product } from '@/types/product';
+import { notifyError } from '@/utils/notify';
 
 import { ProductBottomBar } from './ProductBottomBar';
 import { ProductConditionCard } from './ProductConditionCard';
@@ -24,7 +25,7 @@ export function ProductDetailView({ product }: { product: Product }) {
   const view = toProductView(product);
 
   const variants = product.actualVariants ?? [];
-  const [variantId, setVariantId] = useState<string | undefined>(variants[0]?.id);
+  const [variantId, setVariantId] = useState<string | undefined>();
   const variant = variants.find((v) => v.id === variantId);
 
   const productPhotos = (product.photos ?? []).map((p) => resolveImage(p.url)).filter((u): u is string => !!u);
@@ -35,9 +36,18 @@ export function ProductDetailView({ product }: { product: Product }) {
   const oldPrice = variant ? undefined : view.oldPrice;
   const unavailable = product.isAvailable === false;
 
-  const addToCart = () => addToBasket(product.id, 1, variant?.id);
+  // A product with variants can't be bought until the customer has picked one.
+  const needsVariant = variants.length > 0 && !variant;
+  const addToCart = async () => {
+    if (needsVariant) {
+      notifyError('Veuillez choisir une option avant de continuer.', 'Option requise');
+      return false;
+    }
+    await addToBasket(product.id, 1, variant?.id);
+    return true;
+  };
   const buyNow = async () => {
-    await addToCart();
+    if (!(await addToCart())) return;
     router.navigate('/panier');
   };
 
@@ -56,8 +66,8 @@ export function ProductDetailView({ product }: { product: Product }) {
           <ProductVariantPicker variants={variants} selectedId={variantId} onSelect={setVariantId} />
         ) : null}
         <ProductPriceCard price={price} oldPrice={oldPrice} available={!unavailable} />
-        {view.condition ? <ProductConditionCard condition={view.condition} acceptReturn={product.acceptReturn} /> : null}
-        <ProductTrustCards />
+        {view.condition ? <ProductConditionCard condition={view.condition} /> : null}
+        <ProductTrustCards acceptReturn={product.acceptReturn} />
         <ProductInfoSections product={product} />
       </ScrollView>
       <ProductBottomBar price={price} disabled={unavailable} onAddToCart={addToCart} onBuyNow={buyNow} />

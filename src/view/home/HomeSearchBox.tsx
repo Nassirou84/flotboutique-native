@@ -4,10 +4,18 @@ import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { colors } from '@/theme/colors';
 
-/** Search field that hands the query to `onSearch` (on submit or when the filter button is pressed). */
-export function HomeSearchBox({ onSearch }: { onSearch: (query?: string) => void }) {
+type Props = {
+  /** Called on submit. */
+  onSearch: (query?: string) => void;
+  /** Called when the filter button is pressed, with what has been typed so far. */
+  onOpenFilters: (query?: string) => void;
+};
+
+/** Search field: submitting searches the catalogue, the filter button opens the filters page. */
+export function HomeSearchBox({ onSearch, onOpenFilters }: Props) {
   const [query, setQuery] = useState('');
   const submit = () => onSearch(query.trim() || undefined);
+  const openFilters = () => onOpenFilters(query.trim() || undefined);
 
   return (
     <View style={styles.box}>
@@ -22,7 +30,7 @@ export function HomeSearchBox({ onSearch }: { onSearch: (query?: string) => void
         returnKeyType="search"
         numberOfLines={1}
       />
-      <Pressable onPress={submit} style={styles.filterBtn} accessibilityRole="button" accessibilityLabel="Filtres">
+      <Pressable onPress={openFilters} style={styles.filterBtn} accessibilityRole="button" accessibilityLabel="Filtres">
         <Ionicons name="options-outline" size={20} color="#1D4ED8" />
       </Pressable>
     </View>

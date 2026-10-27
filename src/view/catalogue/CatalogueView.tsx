@@ -1,4 +1,5 @@
-import { FlatList, StyleSheet } from 'react-native';
+import { router } from 'expo-router';
+import { FlatList, RefreshControl, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { colors } from '@/theme/colors';
@@ -22,17 +23,22 @@ export function CatalogueView() {
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={c.refreshing} onRefresh={c.refresh} tintColor={colors.primary} colors={[colors.primary]} />
+        }
         onEndReached={c.loadMore}
         onEndReachedThreshold={0.6}
         ListHeaderComponent={
           <CatalogueHeader
             query={c.query}
             onChangeQuery={c.setQuery}
-            category={c.category}
-            onSelectCategory={c.setCategory}
+            tag={c.tag}
+            onSelectTag={c.setTag}
             resultCount={c.resultCount}
             sort={c.sort}
             onCycleSort={c.cycleSort}
+            activeFilters={c.activeFilters}
+            onPressFilters={() => router.push('/filtres')}
           />
         }
         renderItem={({ item }) => <CatalogueProductItem product={item} />}
@@ -41,6 +47,7 @@ export function CatalogueView() {
         }
         ListFooterComponent={<CatalogueFooter loadingMore={c.isFetchingNextPage} />}
       />
+
     </SafeAreaView>
   );
 }

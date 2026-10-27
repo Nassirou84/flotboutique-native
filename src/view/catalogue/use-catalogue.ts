@@ -1,17 +1,27 @@
 import { useLocalSearchParams } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { useGetProducts } from '@/api/product/products';
 import { toProductView } from '@/data/products';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
+import { usePullToRefresh } from '@/hooks/use-pull-to-refresh';
 
-import { SORT_ORDER, isCategory, type Category, type Sort } from './constants';
+import { setFiltersState, useFiltersState } from './filters-store';
+import {
+  SORT_CLAUSES,
+  SORT_ORDER,
+  countActiveFilters,
+  isTag,
+  priceFilters,
+  tagFilters,
+  type Tag,
+} from './constants';
 
 /** State and data for the catalogue screen: URL params, search, filters, sort and the paginated product list. */
 export function useCatalogue() {
   const params = useLocalSearchParams<{ q?: string; condition?: string }>();
   const [query, setQuery] = useState(params.q ?? '');
-  const [category, setCategory] = useState<Category>(isCategory(params.condition) ? params.condition : 'all');
+  const [tag, setTag] = useState<Tag>(isTag(params.condition) ? params.condition : 'all');
 
   // Tab screens stay mounted, so re-sync when the home screen links in with new params.
   const paramsKey = `${params.q ?? ''}|${params.condition ?? ''}`;
@@ -19,45 +29,46 @@ export function useCatalogue() {
   if (seenParams !== paramsKey) {
     setSeenParams(paramsKey);
     setQuery(params.q ?? '');
-    setCategory(isCategory(params.condition) ? params.condition : 'all');
+    setTag(isTag(params.condition) ? params.condition : 'all');
   }
 
-  const [sort, setSort] = useState<Sort>('popularity');
+  // Edited on the filters page, which is a separate route.
+  const { filters, sort } = useFiltersState();
 
-  // Search is done server-side (`title`). The API can't yet filter by condition or sort by price,
-  // so those apply to the pages loaded so far.
+  // Search, tag, category, price and sort are all done by the API, so they apply to the whole catalogue
+  // (and to the total shown), not just to the pages loaded so far.
   const debouncedQuery = useDebouncedValue(query.trim());
-  const { data, isLoading, isError, error, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useGetProducts({ title: debouncedQuery || undefined });
+  const { data, isLoading, isError, error, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } = useGetProducts({
+    title: debouncedQuery || undefined,
+    ...tagFilters(tag),
+    category: filters.category || undefined,
+    subcategory: filters.subcategory || undefined,
+    ...priceFilters(filters),
+    order: SORT_CLAUSES[sort],
+  });
 
   const totalItems = data?.pages[0]?.totalItems ?? 0;
 
-  const products = useMemo(() => {
-    const list = (data?.pages ?? []).flatMap((page) => page.products.map(toProductView));
-    const filtered = category === 'all' ? list : list.filter((p) => p.condition === category);
-    if (sort === 'price-asc') return [...filtered].sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity));
-    if (sort === 'price-desc') return [...filtered].sort((a, b) => (b.price ?? -Infinity) - (a.price ?? -Infinity));
-    return filtered;
-  }, [data, category, sort]);
+  const products = useMemo(() => (data?.pages ?? []).flatMap((page) => page.products.map(toProductView)), [data]);
 
-  // A condition filter can leave too few items on screen to trigger onEndReached: keep loading.
-  useEffect(() => {
-    if (category !== 'all' && products.length < 6 && hasNextPage && !isFetchingNextPage) fetchNextPage();
-  }, [category, products.length, hasNextPage, isFetchingNextPage, fetchNextPage]);
+  const { refreshing, refresh } = usePullToRefresh(refetch);
 
   return {
     query,
     setQuery,
-    category,
-    setCategory,
+    tag,
+    setTag,
     sort,
-    cycleSort: () => setSort((s) => SORT_ORDER[(SORT_ORDER.indexOf(s) + 1) % SORT_ORDER.length]),
+    activeFilters: countActiveFilters(filters),
+    cycleSort: () => setFiltersState({ sort: SORT_ORDER[(SORT_ORDER.indexOf(sort) + 1) % SORT_ORDER.length] }),
     products,
-    resultCount: category === 'all' ? totalItems : products.length,
+    resultCount: totalItems,
     isLoading,
     isError,
     error,
     refetch,
+    refreshing,
+    refresh,
     loadMore: () => hasNextPage && !isFetchingNextPage && fetchNextPage(),
     isFetchingNextPage,
   };

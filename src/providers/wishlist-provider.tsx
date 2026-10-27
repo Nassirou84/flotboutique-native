@@ -10,7 +10,7 @@ import { useAuth } from '@/auth/auth-provider';
 import type { Product } from '@/types/product';
 import type { WishlistItem } from '@/types/wishlist';
 import { getErrorMessage } from '@/utils/errors';
-import { notifyError } from '@/utils/notify';
+import { notifyError, notifySignIn } from '@/utils/notify';
 
 type Action =
   | { type: 'ADD'; item: WishlistItem }
@@ -39,6 +39,9 @@ type WishlistContextType = {
   /** Adds the product, or removes it if already wishlisted. Prompts to sign in when signed out. */
   toggleWishlist: (product: Pick<Product, 'id' | '@id'>) => Promise<void>;
   removeFromWishlist: (item: WishlistItem) => Promise<void>;
+  /** True until the first fetch settles for a signed-in user. */
+  isLoading: boolean;
+  refresh: () => Promise<void>;
 };
 
 const WishlistContext = createContext<WishlistContextType | null>(null);
@@ -53,7 +56,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   const { user, authenticated } = useAuth();
   const [items, dispatch] = useReducer(reducer, []);
 
-  const { data, isLoading, isError } = useGetUserWishlist(user?.id ?? 0);
+  const { data, isLoading, isError, refetch } = useGetUserWishlist(user?.id ?? 0);
   const { mutateAsync: addItem } = useAddToWishlist();
   const { mutateAsync: removeItem } = useRemoveFromWishlist();
   const { mutateAsync: removeProduct } = useRemoveProductFromWishlist();
@@ -68,7 +71,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   const toggleWishlist = useCallback<WishlistContextType['toggleWishlist']>(
     async (product) => {
       if (!authenticated) {
-        notifyError('Connectez-vous pour ajouter un produit à votre liste de souhaits.', 'Liste de souhaits');
+        notifySignIn('Connectez-vous pour ajouter un produit à votre liste de souhaits.', 'Liste de souhaits');
         return;
       }
       try {
@@ -97,9 +100,21 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     [removeItem],
   );
 
+  const refresh = useCallback(async () => {
+    if (user) await refetch();
+  }, [user, refetch]);
+
   const value = useMemo<WishlistContextType>(
-    () => ({ wishlist: items, wishlistCount: items.length, wishlistMember, toggleWishlist, removeFromWishlist }),
-    [items, wishlistMember, toggleWishlist, removeFromWishlist],
+    () => ({
+      wishlist: items,
+      wishlistCount: items.length,
+      wishlistMember,
+      toggleWishlist,
+      removeFromWishlist,
+      isLoading: !!user && isLoading,
+      refresh,
+    }),
+    [items, wishlistMember, toggleWishlist, removeFromWishlist, user, isLoading, refresh],
   );
 
   return <WishlistContext.Provider value={value}>{children}</WishlistContext.Provider>;
