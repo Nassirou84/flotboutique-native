@@ -19,12 +19,12 @@ import {
 
 /** State and data for the catalogue screen: URL params, search, filters, sort and the paginated product list. */
 export function useCatalogue() {
-  const params = useLocalSearchParams<{ q?: string; condition?: string }>();
+  const params = useLocalSearchParams<{ q?: string; condition?: string; t?: string }>();
   const [query, setQuery] = useState(params.q ?? '');
   const [tag, setTag] = useState<Tag>(isTag(params.condition) ? params.condition : 'all');
 
   // Tab screens stay mounted, so re-sync when the home screen links in with new params.
-  const paramsKey = `${params.q ?? ''}|${params.condition ?? ''}`;
+  const paramsKey = `${params.q ?? ''}|${params.condition ?? ''}|${params.t ?? ''}`;
   const [seenParams, setSeenParams] = useState(paramsKey);
   if (seenParams !== paramsKey) {
     setSeenParams(paramsKey);

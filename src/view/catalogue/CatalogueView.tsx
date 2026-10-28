@@ -45,7 +45,9 @@ export function CatalogueView() {
         ListEmptyComponent={
           <CatalogueEmpty isLoading={c.isLoading} isError={c.isError} error={c.error} onRetry={c.refetch} />
         }
-        ListFooterComponent={<CatalogueFooter loadingMore={c.isFetchingNextPage} />}
+        ListFooterComponent={
+          <CatalogueFooter loadingMore={c.isFetchingNextPage} loaded={c.products.length} total={c.resultCount} />
+        }
       />
 
     </SafeAreaView>

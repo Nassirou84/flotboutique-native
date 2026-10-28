@@ -34,7 +34,6 @@ export function ProductDetailView({ product }: { product: Product }) {
 
   const price = variant?.actualPrice ?? product.actualPrice;
   const oldPrice = variant ? undefined : view.oldPrice;
-  const unavailable = product.isAvailable === false;
 
   // A product with variants can't be bought until the customer has picked one.
   const needsVariant = variants.length > 0 && !variant;
@@ -43,7 +42,7 @@ export function ProductDetailView({ product }: { product: Product }) {
       notifyError('Veuillez choisir une option avant de continuer.', 'Option requise');
       return false;
     }
-    await addToBasket(product.id, 1, variant?.id);
+    await addToBasket(product.id, 1, variant);
     return true;
   };
   const buyNow = async () => {
@@ -53,7 +52,7 @@ export function ProductDetailView({ product }: { product: Product }) {
 
   return (
     <View style={styles.flex}>
-      <ProductTopBar onShare={() => Share.share({ message: view.name }).catch(() => {})} />
+      <ProductTopBar onShare={() => Share.share({ message: view.name }).catch(() => { })} />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <ProductHeader brand={product.brand} sku={product.uid} title={view.name} rating={product.overallRating} />
         <ProductGallery
@@ -65,12 +64,12 @@ export function ProductDetailView({ product }: { product: Product }) {
         {variants.length > 0 ? (
           <ProductVariantPicker variants={variants} selectedId={variantId} onSelect={setVariantId} />
         ) : null}
-        <ProductPriceCard price={price} oldPrice={oldPrice} available={!unavailable} />
+        <ProductPriceCard price={price} oldPrice={oldPrice} saveAmount={product.amountSaved ?? (oldPrice && price ? oldPrice - price : undefined)} />
         {view.condition ? <ProductConditionCard condition={view.condition} /> : null}
         <ProductTrustCards acceptReturn={product.acceptReturn} />
         <ProductInfoSections product={product} />
       </ScrollView>
-      <ProductBottomBar price={price} disabled={unavailable} onAddToCart={addToCart} onBuyNow={buyNow} />
+      <ProductBottomBar price={price} onAddToCart={addToCart} onBuyNow={buyNow} />
     </View>
   );
 }

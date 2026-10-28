@@ -25,6 +25,6 @@ export function ProductThumb({ size, slug }: Props) {
 }
 
 const styles = StyleSheet.create({
-  box: { borderRadius: 8, backgroundColor: colors.chipBg, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  box: { borderRadius: 8, backgroundColor: colors.imageBg, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   image: { width: '100%', height: '100%' },
 });

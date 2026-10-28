@@ -2,6 +2,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 
 import axios from '@/api/client';
 import type { Basket, BasketItem } from '@/types/basket';
+import type { ActualVariant, Variant } from '@/types/product';
 
 // --- Authenticated basket -------------------------------------------------------------------
 
@@ -12,7 +13,8 @@ export const useGetUserBasket = (userId: number) =>
     queryKey: getUserBasketQueryKey(userId),
     queryFn: async () => {
       const response = await axios.get(`/customer/${userId}/baskets`);
-      return response.data.member[0] as Basket;
+      console.log(response.data);
+      return response.data[0] as Basket;
     },
     enabled: !!userId,
     staleTime: 1000 * 60 * 5,
@@ -39,7 +41,8 @@ const assertSuccess = (data: ApiResult, fallback: string) => {
 
 export const useAddToBasket = () =>
   useMutation({
-    mutationFn: async (data: { productId: string | number; quantity: number; variant?: string }) => {
+    // The API expects the whole variant object (it matches it by title/name server-side), not just an id.
+    mutationFn: async (data: { productId: string | number; quantity: number; variant?: ActualVariant | Variant }) => {
       const response = await axios.post('/basket/add', data);
       assertSuccess(response.data, "Impossible d'ajouter le produit au panier. Veuillez réessayer.");
       return response.data.basketItem as BasketItem;

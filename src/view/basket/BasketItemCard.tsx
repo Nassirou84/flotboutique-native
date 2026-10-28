@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useGetProduct } from '@/api/product/products';
-import { CONDITION_FROM_API, CONDITION_LABELS, coverPhotoUrl, resolveImage } from '@/data/products';
+import { CONDITION_FROM_API, CONDITION_LABELS, coverPhotoUrl, resolveImage, variantLabel } from '@/data/products';
 import { colors } from '@/theme/colors';
 import type { BasketItem } from '@/types/basket';
 import { useCurrency } from '@/providers/currency-provider';
@@ -25,11 +25,13 @@ export function BasketItemCard({ item, onChangeQuantity, onRemove }: Props) {
   const { product } = item;
   // The basket only carries photo IRIs, so the cover comes from the full product (cached, shared with the product page).
   const { data: fullProduct } = useGetProduct(product.slug);
-  const image = resolveImage(coverPhotoUrl(fullProduct?.photos));
+  // A selected variant brings its own image; fall back to the product cover when it has none.
+  const variantImage = typeof item.variant?.image === 'string' ? item.variant.image : undefined;
+  const image = resolveImage(variantImage) ?? resolveImage(coverPhotoUrl(fullProduct?.photos));
   const unitPrice = item.priceAtAdd ?? product.actualPrice ?? 0;
-  const oldPrice = product.previousPrice && product.previousPrice > unitPrice ? product.previousPrice : undefined;
+  const oldPrice = product.lastPrice && product.lastPrice > unitPrice ? product.lastPrice : undefined;
   const condition = product.productCondition ? CONDITION_FROM_API[product.productCondition] : undefined;
-  const unavailable = product.isAvailable === false;
+  const variant = variantLabel(item.variant);
 
   const run = async (action: () => Promise<void>) => {
     setBusy(true);
@@ -55,10 +57,10 @@ export function BasketItemCard({ item, onChangeQuantity, onRemove }: Props) {
               <Ionicons name="cube-outline" size={28} color={colors.strike} />
             </View>
           )}
-          {item.variant ? (
+          {variant ? (
             <View style={styles.variant}>
               <Text style={styles.variantText} numberOfLines={1}>
-                {item.variant}
+                {variant}
               </Text>
             </View>
           ) : null}
@@ -105,12 +107,10 @@ export function BasketItemCard({ item, onChangeQuantity, onRemove }: Props) {
         </View>
       </View>
 
-      <View style={[styles.footer, unavailable && styles.footerWarn]}>
+      <View style={styles.footer}>
         <View style={styles.footerLeft}>
-          <View style={[styles.dot, unavailable && styles.dotWarn]} />
-          <Text style={[styles.footerText, unavailable && styles.footerTextWarn]}>
-            {unavailable ? 'Actuellement indisponible' : 'Disponible'}
-          </Text>
+          <View style={styles.dot} />
+          <Text style={styles.footerText}>Disponible</Text>
         </View>
         {busy ? (
           <ActivityIndicator size="small" color={colors.primary} />
@@ -174,11 +174,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: colors.background,
   },
-  footerWarn: { backgroundColor: colors.orangeSoft },
   footerLeft: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.green },
-  dotWarn: { backgroundColor: colors.orange },
   footerText: { fontSize: 11, color: colors.text },
-  footerTextWarn: { color: colors.orange },
   lineTotal: { fontSize: 11, fontWeight: '600', color: colors.text },
 });

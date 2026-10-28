@@ -1,29 +1,31 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors } from '@/theme/colors';
 
 type Props = {
   value: string;
   onChangeText: (text: string) => void;
+  /** Opens the full-screen search. */
+  onPressSearch: () => void;
   activeFilters?: number;
   onPressFilters?: () => void;
 };
 
-export function SearchBar({ value, onChangeText, activeFilters = 0, onPressFilters }: Props) {
+export function SearchBar({ value, onChangeText, onPressSearch, activeFilters = 0, onPressFilters }: Props) {
   return (
     <View style={styles.row}>
       <View style={styles.input}>
-        <Ionicons name="search" size={20} color={colors.textMuted} />
-        <TextInput
-          value={value}
-          onChangeText={onChangeText}
-          placeholder="iPhone, Samsung, MacBook, AirPods"
-          placeholderTextColor="#94A3B8"
-          style={styles.text}
-          returnKeyType="search"
-          numberOfLines={1}
-        />
+        <Pressable
+          onPress={onPressSearch}
+          style={styles.field}
+          accessibilityRole="search"
+          accessibilityLabel="Rechercher un produit">
+          <Ionicons name="search" size={20} color={colors.textMuted} />
+          <Text style={[styles.text, !value && styles.placeholder]} numberOfLines={1}>
+            {value || 'iPhone, Samsung, MacBook, AirPods'}
+          </Text>
+        </Pressable>
         {value.length > 0 && (
           <Pressable onPress={() => onChangeText('')} hitSlop={8} accessibilityLabel="Effacer la recherche">
             <Ionicons name="close-circle-outline" size={20} color={colors.textMuted} />
@@ -60,7 +62,9 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.border,
   },
-  text: { flex: 1, fontSize: 15, color: colors.text, padding: 0 },
+  field: { flex: 1, height: '100%', flexDirection: 'row', alignItems: 'center', gap: 10 },
+  text: { flex: 1, fontSize: 15, color: colors.text },
+  placeholder: { color: '#94A3B8' },
   filterBtn: {
     width: 48,
     height: 48,

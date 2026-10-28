@@ -17,7 +17,9 @@ export default function RootLayout() {
             <BasketProvider>
               <WishlistProvider>
                 <StatusBar style="dark" />
-                <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right' }} />
+                <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
+                  <Stack.Screen name="recherche" options={{ animation: 'fade', animationDuration: 200 }} />
+                </Stack>
               </WishlistProvider>
             </BasketProvider>
           </AuthProvider>

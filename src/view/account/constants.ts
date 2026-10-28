@@ -11,7 +11,7 @@ export type MenuItem = {
   value?: string;
   valueTone?: 'good' | 'muted';
   /** Route to open; the row falls back to the "coming soon" notice when it is missing. */
-  href?: '/mot-de-passe-oublie' | '/modifier-telephone' | '/adresses' | '/modifier-mot-de-passe' | '/double-authentification' | '/appareils-de-confiance' | '/moyens-de-paiement';
+  href?: '/mot-de-passe-oublie' | '/modifier-telephone' | '/adresses' | '/modifier-mot-de-passe' | '/double-authentification' | '/appareils-de-confiance' | '/moyens-de-paiement' | '/code-pin-livraison';
 };
 
 export type MenuSection = { key: string; title: string; items: MenuItem[] };
@@ -81,6 +81,15 @@ export const buildMenu = (user: User): MenuSection[] => {
           label: 'Appareils de confiance',
           href: '/appareils-de-confiance',
           value: devices > 0 ? String(devices) : undefined,
+        },
+        {
+          key: 'delivery-pin',
+          icon: 'keypad-outline',
+          label: 'Code PIN de livraison',
+          subtitle: 'À demander par le livreur avant remise du colis',
+          href: '/code-pin-livraison',
+          value: user.deliveryPin ? 'Défini' : 'Non défini',
+          valueTone: user.deliveryPin ? 'good' : 'muted',
         },
       ],
     },

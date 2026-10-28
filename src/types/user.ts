@@ -47,4 +47,6 @@ export interface User {
   twoFactor?: boolean;
   twoFactorContactMethod?: 'email' | 'text';
   trustedDevices?: TrustedDevice[];
+  /** 4–6 digit code a courier must ask for before handing over a parcel. */
+  deliveryPin?: string;
 }

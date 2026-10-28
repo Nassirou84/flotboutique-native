@@ -7,6 +7,7 @@ import { HomeHeader } from '@/components/HomeHeader';
 import { WhyFlot } from '@/components/WhyFlot';
 import { usePullToRefresh } from '@/hooks/use-pull-to-refresh';
 import { colors } from '@/theme/colors';
+import { goToSearch } from '@/view/search';
 
 import { FLASH_ENDS_AT } from './constants';
 import { HomeHero } from './HomeHero';
@@ -32,7 +33,7 @@ export function HomeView() {
         <View style={styles.pad}>
           <HomeHeader />
         </View>
-        <HomeSearchBox onSearch={(q) => goToCatalogue({ q })} onOpenFilters={(q) => goToFilters({ q })} />
+        <HomeSearchBox onPress={() => goToSearch()} onOpenFilters={() => goToFilters()} />
         <HomeHero />
 
         <HomeSection title="Nos 3 États Certifiés" action={{ label: "Guide d'achat", icon: 'help-circle-outline' }}>

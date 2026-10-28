@@ -10,7 +10,9 @@ import {
   useUpdateBasketQuantity,
 } from '@/api/basket/basket';
 import { useAuth } from '@/auth/auth-provider';
+import { variantLabel } from '@/data/products';
 import type { Basket, BasketItem } from '@/types/basket';
+import type { ActualVariant, Variant } from '@/types/product';
 import { getErrorMessage } from '@/utils/errors';
 import { notifyError, notifySuccess } from '@/utils/notify';
 
@@ -21,29 +23,39 @@ type Action =
   | { type: 'UPDATE_QUANTITY'; basketItemId: number; quantity: number }
   | { type: 'SET'; basket: Basket | null };
 
+// Mirrors the server's total (BasketService::normalizeWithTotal) so it stays right after a local edit.
+const itemTotal = (item: BasketItem) => (item.priceAtAdd ?? item.product.actualPrice ?? 0) * item.quantity;
+const sumTotal = (items: BasketItem[]) => items.reduce((sum, item) => sum + itemTotal(item), 0);
+
+const withItems = (state: Basket, basketItems: BasketItem[]): Basket => ({
+  ...state,
+  basketItems,
+  total: sumTotal(basketItems),
+});
+
 const reducer = (state: Basket | null, action: Action): Basket | null => {
   switch (action.type) {
     case 'ADD':
       // A refetch can land before this dispatch and already contain the item, so upsert by id.
       return (
-        state && {
-          ...state,
-          basketItems: state.basketItems.some((i) => i.id === action.item.id)
+        state &&
+        withItems(
+          state,
+          state.basketItems.some((i) => i.id === action.item.id)
             ? state.basketItems.map((i) => (i.id === action.item.id ? action.item : i))
             : [...state.basketItems, action.item],
-        }
+        )
       );
     case 'UPDATE_QUANTITY':
       return (
-        state && {
-          ...state,
-          basketItems: state.basketItems.map((i) =>
-            i.id === action.basketItemId ? { ...i, quantity: action.quantity } : i,
-          ),
-        }
+        state &&
+        withItems(
+          state,
+          state.basketItems.map((i) => (i.id === action.basketItemId ? { ...i, quantity: action.quantity } : i)),
+        )
       );
     case 'REMOVE':
-      return state && { ...state, basketItems: state.basketItems.filter((i) => i.id !== action.basketItemId) };
+      return state && withItems(state, state.basketItems.filter((i) => i.id !== action.basketItemId));
     case 'CLEAR':
       return null;
     case 'SET':
@@ -55,9 +67,11 @@ type BasketContextType = {
   basket: Basket | null;
   items: BasketItem[];
   basketCount: number;
+  /** Server-computed basket total, kept in sync after local edits. */
+  total: number;
   isHydrated: boolean;
   /** Resolves to whether the product ended up added (false when already in the basket or on error). */
-  addToBasket: (productId: number, quantity?: number, variant?: string) => Promise<boolean>;
+  addToBasket: (productId: number, quantity?: number, variant?: ActualVariant | Variant) => Promise<boolean>;
   removeFromBasket: (basketItemId: number) => Promise<void>;
   updateQuantity: (basketItemId: number, quantity: number) => Promise<void>;
   clearBasket: () => Promise<void>;
@@ -125,7 +139,8 @@ export function BasketProvider({ children }: { children: ReactNode }) {
 
   const addToBasket = useCallback<BasketContextType['addToBasket']>(
     async (productId, quantity = 1, variant) => {
-      if (basket?.basketItems.some((i) => i.product.id === productId && i.variant === variant)) {
+      const label = variantLabel(variant);
+      if (basket?.basketItems.some((i) => i.product.id === productId && variantLabel(i.variant) === label)) {
         notifyError('Ce produit est déjà dans votre panier.', 'Panier');
         return false;
       }
@@ -188,6 +203,7 @@ export function BasketProvider({ children }: { children: ReactNode }) {
       basket,
       items: basket?.basketItems ?? [],
       basketCount: basket?.basketItems.length ?? 0,
+      total: basket?.total ?? 0,
       isHydrated: !isLoading && !isError,
       addToBasket,
       removeFromBasket,

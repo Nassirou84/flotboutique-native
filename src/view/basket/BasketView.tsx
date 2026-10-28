@@ -5,7 +5,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { usePullToRefresh } from '@/hooks/use-pull-to-refresh';
 import { useBasket } from '@/providers/basket-provider';
 import { colors } from '@/theme/colors';
-import type { BasketItem } from '@/types/basket';
 
 import { BasketEmpty } from './BasketEmpty';
 import { BasketHeader } from './BasketHeader';
@@ -13,14 +12,11 @@ import { BasketItemCard } from './BasketItemCard';
 import { BasketRecap } from './BasketRecap';
 import { BasketSummary } from './BasketSummary';
 
-const unitPrice = (item: BasketItem) => item.priceAtAdd ?? item.product.actualPrice ?? 0;
-
 export function BasketView() {
-  const { items, isHydrated, updateQuantity, removeFromBasket, clearBasket, refresh } = useBasket();
+  const { items, total, isHydrated, updateQuantity, removeFromBasket, clearBasket, refresh } = useBasket();
   const { refreshing, refresh: onRefresh } = usePullToRefresh(refresh);
 
   const itemCount = items.reduce((n, i) => n + i.quantity, 0);
-  const total = items.reduce((sum, i) => sum + unitPrice(i) * i.quantity, 0);
 
   const confirmClear = () =>
     Alert.alert('Vider le panier', 'Retirer tous les articles du panier ?', [

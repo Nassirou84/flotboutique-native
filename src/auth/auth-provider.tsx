@@ -55,6 +55,8 @@ export type AuthContextType = {
   /** Replaces the whole list of delivery addresses, as the web storefront does. */
   updateAddresses: (addresses: Address[]) => Promise<void>;
   updateTwoFactor: (enabled: boolean) => Promise<void>;
+  /** Saves the courier delivery PIN and updates `user` with what the server stored. */
+  updateDeliveryPin: (pin: string) => Promise<void>;
   /** Revokes a trusted device on the server, then drops it from `user.trustedDevices`. */
   removeTrustedDevice: (deviceId: string) => Promise<void>;
   /** Reloads `user` from the server. Rejects on failure without touching the session. */
@@ -209,6 +211,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'UPDATE_USER', fields: await editProfile({ twoFactor: enabled }) });
   }, []);
 
+  const updateDeliveryPin = useCallback<AuthContextType['updateDeliveryPin']>(async (pin) => {
+    dispatch({ type: 'UPDATE_USER', fields: await editProfile({ deliveryPin: pin }) });
+  }, []);
+
   const removeTrustedDevice = useCallback<AuthContextType['removeTrustedDevice']>(
     async (deviceId) => {
       await deleteTrustedDevice(deviceId);
@@ -241,10 +247,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       updatePhone,
       updateAddresses,
       updateTwoFactor,
+      updateDeliveryPin,
       removeTrustedDevice,
       refreshUser,
     }),
-    [state, login, register, confirm2FA, resend2FACode, loginWithGoogle, logout, updateProfile, updatePhone, updateAddresses, updateTwoFactor, removeTrustedDevice, refreshUser],
+    [state, login, register, confirm2FA, resend2FACode, loginWithGoogle, logout, updateProfile, updatePhone, updateAddresses, updateTwoFactor, updateDeliveryPin, removeTrustedDevice, refreshUser],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

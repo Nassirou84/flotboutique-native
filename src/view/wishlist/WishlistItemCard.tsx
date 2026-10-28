@@ -24,11 +24,10 @@ export function WishlistItemCard({ item, onRemove }: Props) {
   const image = resolveImage(coverPhotoUrl(fullProduct?.photos));
 
   const price = product.actualPrice ?? item.priceAtAdd ?? 0;
-  const oldPrice = product.previousPrice && product.previousPrice > price ? product.previousPrice : undefined;
+  const oldPrice = product.lastPrice && product.lastPrice > price ? product.lastPrice : undefined;
   // Price drop since the product was saved.
   const drop = item.priceAtAdd && price > 0 && price < item.priceAtAdd ? item.priceAtAdd - price : 0;
   const condition = product.productCondition ? CONDITION_FROM_API[product.productCondition] : undefined;
-  const unavailable = product.isAvailable === false;
   // Variants are chosen on the product page, so those products can't be added straight from here.
   const needsVariant = Object.keys(item.variant ?? {}).length > 0;
   const inBasket = basketItems.some((i) => i.product.id === product.id);
@@ -120,24 +119,17 @@ export function WishlistItemCard({ item, onRemove }: Props) {
         </View>
       ) : null}
 
-      {unavailable ? (
-        <View style={styles.unavailable}>
-          <Ionicons name="alert-circle-outline" size={14} color={colors.orange} />
-          <Text style={styles.unavailableText}>Actuellement indisponible</Text>
-        </View>
-      ) : (
-        <Pressable
-          onPress={action.onPress}
-          disabled={busy}
-          style={({ pressed }) => [styles.cta, inBasket && !needsVariant && styles.ctaSecondary, pressed && { opacity: 0.85 }]}
-          accessibilityRole="button">
-          {busy ? (
-            <ActivityIndicator size="small" color={inBasket && !needsVariant ? colors.primary : '#fff'} />
-          ) : (
-            <Text style={[styles.ctaText, inBasket && !needsVariant && styles.ctaTextSecondary]}>{action.label}</Text>
-          )}
-        </Pressable>
-      )}
+      <Pressable
+        onPress={action.onPress}
+        disabled={busy}
+        style={({ pressed }) => [styles.cta, inBasket && !needsVariant && styles.ctaSecondary, pressed && { opacity: 0.85 }]}
+        accessibilityRole="button">
+        {busy ? (
+          <ActivityIndicator size="small" color={inBasket && !needsVariant ? colors.primary : '#fff'} />
+        ) : (
+          <Text style={[styles.ctaText, inBasket && !needsVariant && styles.ctaTextSecondary]}>{action.label}</Text>
+        )}
+      </Pressable>
     </View>
   );
 }
@@ -184,16 +176,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.greenSoft,
   },
   dropText: { flex: 1, fontSize: 11, fontWeight: '500', color: colors.green },
-  unavailable: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 10,
-    borderRadius: 8,
-    backgroundColor: colors.orangeSoft,
-  },
-  unavailableText: { fontSize: 12, fontWeight: '500', color: colors.orange },
   cta: { height: 44, borderRadius: 8, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
   ctaSecondary: { backgroundColor: colors.primarySoft },
   ctaText: { color: '#fff', fontSize: 14, fontWeight: '700' },

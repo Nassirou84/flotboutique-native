@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { variantLabel } from '@/data/products';
 import { colors } from '@/theme/colors';
 import { useCurrency } from '@/providers/currency-provider';
 
@@ -80,7 +81,7 @@ export function CheckoutReviewStep({
                 <Text style={styles.itemTitle} numberOfLines={2}>
                   {item.product.title}
                 </Text>
-                {item.variant ? <Text style={styles.muted}>{item.variant}</Text> : null}
+                {variantLabel(item.variant) ? <Text style={styles.muted}>{variantLabel(item.variant)}</Text> : null}
               </View>
               <Text style={styles.itemPrice}>
                 {format((item.product.actualPrice ?? item.priceAtAdd ?? 0) * item.quantity)}

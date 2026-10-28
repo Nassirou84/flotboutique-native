@@ -1,5 +1,6 @@
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { ProductCardSkeleton } from '@/components/ProductCardSkeleton';
 import { colors } from '@/theme/colors';
 import { getErrorMessage } from '@/utils/errors';
 
@@ -18,7 +19,6 @@ export function HomeRecommended({ products, isLoading, isError, error, refetch }
     <HomeSection
       title="Sélection Recommandée"
       action={{ label: 'Tout voir', icon: 'chevron-forward', onPress: () => goToCatalogue() }}>
-      {isLoading ? <ActivityIndicator color={colors.primary} style={styles.status} /> : null}
       {isError ? (
         <View style={styles.status}>
           <Text style={styles.statusText}>{getErrorMessage(error, 'Impossible de charger les produits.')}</Text>
@@ -28,13 +28,24 @@ export function HomeRecommended({ products, isLoading, isError, error, refetch }
         </View>
       ) : null}
       <View style={styles.grid}>
-        {rows.map((row, i) => (
-          <View key={i} style={styles.row}>
-            {row.map((p) => (
-              <HomeProductItem key={p.id} product={p} />
+        {isLoading
+          ? [0, 1].map((i) => (
+              <View key={i} style={styles.row}>
+                <View style={styles.cell}>
+                  <ProductCardSkeleton />
+                </View>
+                <View style={styles.cell}>
+                  <ProductCardSkeleton />
+                </View>
+              </View>
+            ))
+          : rows.map((row, i) => (
+              <View key={i} style={styles.row}>
+                {row.map((p) => (
+                  <HomeProductItem key={p.id} product={p} />
+                ))}
+              </View>
             ))}
-          </View>
-        ))}
       </View>
     </HomeSection>
   );
@@ -43,6 +54,7 @@ export function HomeRecommended({ products, isLoading, isError, error, refetch }
 const styles = StyleSheet.create({
   grid: { gap: 12 },
   row: { flexDirection: 'row', gap: 12 },
+  cell: { flex: 1 },
   status: { alignItems: 'center', gap: 8, paddingVertical: 24 },
   statusText: { color: colors.textMuted, textAlign: 'center' },
   retry: { fontSize: 13, fontWeight: '600', color: '#1D4ED8' },

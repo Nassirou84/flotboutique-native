@@ -49,6 +49,12 @@ export const resolveImage = (url?: string) => {
 /** URL of the photo flagged as cover, or of the first one when none is. */
 export const coverPhotoUrl = (photos?: Photo[]) => (photos?.find((p) => p.isCover) ?? photos?.[0])?.url;
 
+/** Display label of a variant (its `title`, else `name`), mirroring the backend's `Product::getVariantLabel`. */
+export const variantLabel = (variant?: { title?: unknown; name?: unknown } | null): string | undefined => {
+  const label = variant?.title ?? variant?.name;
+  return typeof label === 'string' && label.trim() ? label.trim() : undefined;
+};
+
 export function toProductView(p: Product): ProductView {
   return {
     id: p.id,
@@ -58,7 +64,7 @@ export function toProductView(p: Product): ProductView {
     brand: p.brand,
     condition: p.productCondition ? CONDITION_FROM_API[p.productCondition] : undefined,
     price: p.actualPrice,
-    oldPrice: p.previousPrice && p.previousPrice > (p.actualPrice ?? 0) ? p.previousPrice : undefined,
+    oldPrice: p.lastPrice && p.lastPrice > (p.actualPrice ?? 0) ? p.lastPrice : undefined,
     image: resolveImage(coverPhotoUrl(p.photos)),
     icon: 'cube-outline',
   };

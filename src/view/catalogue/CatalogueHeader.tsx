@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { CategoryChips } from '@/components/Chips';
 import { HomeHeader } from '@/components/HomeHeader';
 import { SearchBar } from '@/components/SearchBar';
+import { goToSearch } from '@/view/search';
 
 import { CatalogueResultsBar } from './CatalogueResultsBar';
 import { TAGS, type Tag, type Sort } from './constants';
@@ -29,6 +30,7 @@ export function CatalogueHeader(props: Props) {
         <SearchBar
           value={props.query}
           onChangeText={props.onChangeQuery}
+          onPressSearch={() => goToSearch(props.query)}
           activeFilters={props.activeFilters}
           onPressFilters={props.onPressFilters}
         />

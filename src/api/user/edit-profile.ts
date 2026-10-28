@@ -1,7 +1,7 @@
 import axios from '@/api/client';
 import type { User } from '@/types/user';
 
-export type EditableProfile = Pick<User, 'firstName' | 'lastName' | 'phone' | 'addresses' | 'twoFactor'>;
+export type EditableProfile = Pick<User, 'firstName' | 'lastName' | 'phone' | 'addresses' | 'twoFactor' | 'deliveryPin'>;
 
 /**
  * `EditCurrentUserController`: only the fields that are sent are changed. Rejects with `{ error }`

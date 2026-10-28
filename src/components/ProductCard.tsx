@@ -18,10 +18,9 @@ type Props = {
   product: ProductView;
   favorite: boolean;
   onToggleFavorite: () => void;
-  onAddToCart: () => void;
 };
 
-export function ProductCard({ product, favorite, onToggleFavorite, onAddToCart }: Props) {
+export function ProductCard({ product, favorite, onToggleFavorite }: Props) {
   const { currency, format } = useCurrency();
   const badge = product.condition ? BADGE[product.condition] : undefined;
   const lightBadge = product.condition === 'neuf';
@@ -74,9 +73,6 @@ export function ProductCard({ product, favorite, onToggleFavorite, onAddToCart }
         ) : null}
 
         <View style={styles.priceBlock}>
-          {product.oldPrice ? (
-            <Text style={styles.oldPrice}>{format(product.oldPrice)}</Text>
-          ) : null}
           {product.price != null ? (
             <Text style={styles.price}>
               {formatPrice(product.price)} <Text style={styles.currency}>{currency}</Text>
@@ -84,16 +80,10 @@ export function ProductCard({ product, favorite, onToggleFavorite, onAddToCart }
           ) : (
             <Text style={styles.currency}>Prix sur demande</Text>
           )}
+          {product.oldPrice ? (
+            <Text style={styles.oldPrice}>{format(product.oldPrice)}</Text>
+          ) : null}
         </View>
-
-        <Pressable
-          onPress={onAddToCart}
-          style={({ pressed }) => [styles.cta, pressed && { opacity: 0.85 }]}
-          accessibilityRole="button"
-          accessibilityLabel={`Ajouter ${product.name} au panier`}>
-          <Ionicons name="cart" size={18} color="#fff" />
-          <Text style={styles.ctaText}>Panier</Text>
-        </Pressable>
       </View>
     </Pressable>
   );
@@ -138,18 +128,7 @@ const styles = StyleSheet.create({
   name: { fontSize: 15, fontWeight: '700', color: colors.text, minHeight: 36 },
   specs: { fontSize: 12.5, color: colors.textMuted, marginTop: 2 },
   priceBlock: { marginTop: 'auto', paddingTop: 4, minHeight: 40, justifyContent: 'flex-end' },
-  oldPrice: { fontSize: 11, color: colors.strike, textDecorationLine: 'line-through' },
-  price: { fontSize: 16, fontWeight: '800', color: colors.text },
-  currency: { fontSize: 11, fontWeight: '500', color: colors.textMuted },
-  cta: {
-    marginTop: 10,
-    height: 40,
-    borderRadius: 6,
-    backgroundColor: colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-  },
-  ctaText: { color: '#fff', fontWeight: '700', fontSize: 14 },
+  price: { fontSize: 16, fontWeight: '700', color: colors.primary },
+  currency: { fontSize: 11, fontWeight: '500', color: colors.primary },
+  oldPrice: { fontSize: 11, color: colors.strike, textDecorationLine: 'line-through', marginTop: 2 },
 });

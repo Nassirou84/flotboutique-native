@@ -2,6 +2,7 @@ import { keepPreviousData, useInfiniteQuery, useQuery } from '@tanstack/react-qu
 
 import axios from '@/api/client';
 import type { Product } from '@/types/product';
+import type { SearchSuggestion, SearchSuggestionsResponse } from '@/types/search-suggestion';
 
 export type GetAllProductsFilters = {
   title?: string;
@@ -66,4 +67,19 @@ export const useGetProduct = (slug?: string) =>
     queryKey: ['GET_PRODUCT', slug],
     queryFn: () => getProductBySlug(slug as string),
     enabled: !!slug,
+  });
+
+/** Search-as-you-type suggestions (keyword and product title matches) from the dedicated predict endpoint. */
+export const getSearchSuggestions = async (term: string): Promise<SearchSuggestion[]> => {
+  const response = await axios.get<SearchSuggestionsResponse>('/product/search-suggestions', { params: { q: term } });
+  return response.data.suggestions;
+};
+
+export const useSearchSuggestions = (term: string) =>
+  useQuery({
+    queryKey: ['SEARCH_SUGGESTIONS', term],
+    queryFn: () => getSearchSuggestions(term),
+    // The backend returns an empty list under 2 characters anyway.
+    enabled: term.length >= 2,
+    staleTime: 60_000,
   });
