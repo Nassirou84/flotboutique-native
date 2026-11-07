@@ -42,6 +42,17 @@
         }
       ]
     ],
-    "scheme": "flotboutique"
+    "scheme": "flotboutique",
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "e7a36a26-3dff-46f8-8dd3-bc1b643ffcc7"
+      }
+    },
+    "owner": "reitos"
   }
 }
